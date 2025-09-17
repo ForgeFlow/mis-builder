@@ -5,8 +5,11 @@ from openupgradelib import openupgrade
 
 
 @openupgrade.migrate()
-def migrate(env, version):
+def migrate(cr, version):
     """Set the value of the analytic_domain field."""
+    # Workaround to execute the migration script without errors
+    # see https://github.com/odoo/odoo/blob/2a839ef1ed09c36f27ce7536ca3052d9f65ceed9/odoo/modules/migration.py#L252-L256
+    env = cr
     openupgrade.logged_query(
         env.cr,
         """
