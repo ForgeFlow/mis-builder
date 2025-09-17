@@ -277,11 +277,11 @@ class MisReportInstancePeriod(models.Model):
         comodel_name="mis.report.instance.period", compute="_compute_allowed_cmpcol_ids"
     )
     # filters
-    analytic_account_ids = fields.Many2one(
+    analytic_account_id = fields.Many2one(
         comodel_name="account.analytic.account",
-        string="Analytic Accounts",
+        string="Analytic Account",
         help=(
-            "Filter column on journal entries that have one of these analytic accounts."
+            "Filter column on journal entries that match this analytic account."
             "This filter is combined with a AND with the report-level filters "
             "and cannot be modified in the preview."
         ),
@@ -422,8 +422,8 @@ class MisReportInstancePeriod(models.Model):
                     self.report_instance_id.target_move, aml_model_name
                 )
             )
-        if self.analytic_account_ids:
-            domain.append(("analytic_account_id", "in", self.analytic_account_ids.ids))
+        if self.analytic_account_id:
+            domain.append(("analytic_account_id", "=", self.analytic_account_id.id))
         if self.analytic_group_id:
             domain.append(
                 ("analytic_account_id.group_id", "=", self.analytic_group_id.id)
@@ -572,8 +572,8 @@ class MisReportInstance(models.Model):
     date_from = fields.Date(string="From")
     date_to = fields.Date(string="To")
     temporary = fields.Boolean(default=False)
-    analytic_account_ids = fields.Many2many(
-        comodel_name="account.analytic.account", string="Analytic Accounts"
+    analytic_account_id = fields.Many2one(
+        comodel_name="account.analytic.account", string="Analytic Account"
     )
     analytic_group_id = fields.Many2one(
         comodel_name="account.analytic.group",
@@ -618,15 +618,14 @@ class MisReportInstance(models.Model):
     @api.model
     def get_filter_descriptions_from_context(self):
         filters = self.env.context.get("mis_report_filters", {})
-        analytic_account_ids = filters.get("analytic_account_ids", {}).get("value")
+        analytic_account_id = filters.get("analytic_account_id", {}).get("value")
         filter_descriptions = []
-        if analytic_account_ids:
-            analytic_accounts = self.env["account.analytic.account"].browse(
-                analytic_account_ids
+        if analytic_account_id:
+            analytic_account = self.env["account.analytic.account"].browse(
+                analytic_account_id
             )
             filter_descriptions.append(
-                _("Analytic Accounts: %s")
-                % ", ".join(analytic_accounts.mapped("display_name"))
+                _("Analytic Account: %s") % analytic_account.display_name
             )
         analytic_group_id = filters.get("analytic_account_id.group_id", {}).get("value")
         if analytic_group_id:
@@ -714,10 +713,10 @@ class MisReportInstance(models.Model):
 
     def _add_analytic_filters_to_context(self, context):
         self.ensure_one()
-        if self.analytic_account_ids:
+        if self.analytic_account_id:
             context["mis_report_filters"]["analytic_account_id"] = {
-                "value": self.analytic_account_ids.ids,
-                "operator": "in",
+                "value": self.analytic_account_id.id,
+                "operator": "=",
             }
         if self.analytic_group_id:
             context["mis_report_filters"]["analytic_account_id.group_id"] = {
