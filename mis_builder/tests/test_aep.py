@@ -5,17 +5,13 @@ import datetime
 import time
 
 import odoo.tests.common as common
-from odoo import Command, fields
+from odoo import fields
 from odoo.exceptions import UserError
 from odoo.tools.safe_eval import safe_eval
 
-from ..models import aep
 from ..models.accounting_none import AccountingNone
 from ..models.aep import AccountingExpressionProcessor as AEP
 from ..models.aep import _is_domain
-from .common import load_doctests
-
-load_tests = load_doctests(aep)
 
 
 class TestAEP(common.TransactionCase):
@@ -29,17 +25,6 @@ class TestAEP(common.TransactionCase):
         self.prev_year = self.curr_year - 1
         # create company
         self.company = self.res_company.create({"name": "AEP Company"})
-        self.company.currency_id = self.env["res.currency"].create(
-            [
-                {
-                    "name": "Currency AEP Test",
-                    "symbol": "CAT",
-                    "rate_ids": [
-                        Command.create({"name": "2010-10-10", "rate": 1}),
-                    ],
-                }
-            ]
-        )
         # create receivable bs account
         self.account_ar = self.account_model.create(
             {
@@ -56,14 +41,6 @@ class TestAEP(common.TransactionCase):
                 "company_id": self.company.id,
                 "code": "700IN",
                 "name": "Income",
-                "account_type": "income",
-            }
-        )
-        self.account_in_no_data = self.account_model.create(
-            {
-                "company_id": self.company.id,
-                "code": "700INNODATA",
-                "name": "Income (no data)",
                 "account_type": "income",
             }
         )
@@ -89,7 +66,6 @@ class TestAEP(common.TransactionCase):
             amount=300,
             debit_acc=self.account_ar,
             credit_acc=self.account_in,
-            credit_quantity=3,
         )
         # create move in March this year
         self._create_move(
@@ -107,7 +83,6 @@ class TestAEP(common.TransactionCase):
         self.aep.parse_expr("bali[700IN]")
         self.aep.parse_expr("bale[700IN]")
         self.aep.parse_expr("balp[700IN]")
-        self.aep.parse_expr("balp[700NA]")  # account that does not exist
         self.aep.parse_expr("bali[400AR]")
         self.aep.parse_expr("bale[400AR]")
         self.aep.parse_expr("balp[400AR]")
@@ -115,8 +90,6 @@ class TestAEP(common.TransactionCase):
         self.aep.parse_expr("crdp[700I%]")
         self.aep.parse_expr("bali[400%]")
         self.aep.parse_expr("bale[700%]")
-        self.aep.parse_expr("balp[700I%]")
-        self.aep.parse_expr("fldp.quantity[700%]")
         self.aep.parse_expr("balp[]" "[('account_id.code', '=', '400AR')]")
         self.aep.parse_expr(
             "balp[]" "[('account_id.account_type', '=', " " 'asset_receivable')]"
@@ -131,32 +104,17 @@ class TestAEP(common.TransactionCase):
         self.aep.parse_expr("bal_700IN")  # deprecated
         self.aep.parse_expr("bals[700IN]")  # deprecated
 
-    def _create_move(
-        self, date, amount, debit_acc, credit_acc, post=True, credit_quantity=0
-    ):
+    def _create_move(self, date, amount, debit_acc, credit_acc, post=True):
         move = self.move_model.create(
             {
                 "journal_id": self.journal.id,
                 "date": fields.Date.to_string(date),
                 "line_ids": [
+                    (0, 0, {"name": "/", "debit": amount, "account_id": debit_acc.id}),
                     (
                         0,
                         0,
-                        {
-                            "name": "/",
-                            "debit": amount,
-                            "account_id": debit_acc.id,
-                        },
-                    ),
-                    (
-                        0,
-                        0,
-                        {
-                            "name": "/",
-                            "credit": amount,
-                            "account_id": credit_acc.id,
-                            "quantity": credit_quantity,
-                        },
+                        {"name": "/", "credit": amount, "account_id": credit_acc.id},
                     ),
                 ],
             }
@@ -185,20 +143,6 @@ class TestAEP(common.TransactionCase):
     def test_sanity_check(self):
         self.assertEqual(self.company.fiscalyear_last_day, 31)
         self.assertEqual(self.company.fiscalyear_last_month, "12")
-
-    def test_parse_expr_error_handling(self):
-        aep = AEP(self.company)
-        with self.assertRaises(UserError) as cm:
-            aep.parse_expr("fldi.quantity[700%]")
-        self.assertIn(
-            "`fld` can only be used with mode `p` (variation)", str(cm.exception)
-        )
-        with self.assertRaises(UserError) as cm:
-            aep.parse_expr("fldp[700%]")
-        self.assertIn("`fld` must have a field name", str(cm.exception))
-        with self.assertRaises(UserError) as cm:
-            aep.parse_expr("balp.quantity[700%]")
-        self.assertIn("`bal` cannot have a field name", str(cm.exception))
 
     def test_aep_basic(self):
         self.aep.done_parsing()
@@ -249,10 +193,6 @@ class TestAEP(common.TransactionCase):
         # check ending balance
         self.assertEqual(self._eval("bale[400AR]"), 400)
         self.assertEqual(self._eval("bale[700IN]"), -300)
-        # check result for non existing account
-        self.assertIs(self._eval("bale[700NA]"), AccountingNone)
-        # check fldp.quantity
-        self.assertEqual(self._eval("fldp.quantity[700%]"), 3)
 
         # let's query for March
         self._do_queries(
@@ -284,18 +224,11 @@ class TestAEP(common.TransactionCase):
         self.assertEqual(self._eval("debp[400A%]"), 500)
         self.assertEqual(self._eval("bal_700IN"), -500)
         self.assertEqual(self._eval("bals[700IN]"), -800)
-        # check fldp.quantity
-        self.assertEqual(self._eval("fldp.quantity[700%]"), 0)
 
         # unallocated p&l from previous year
         self.assertEqual(self._eval("balu[]"), -100)
-        # TODO allocate profits, and then...
 
-        # let's query for December where there is no data
-        self._do_queries(
-            datetime.date(self.curr_year, 12, 1), datetime.date(self.curr_year, 12, 31)
-        )
-        self.assertIs(self._eval("balp[700IN]"), AccountingNone)
+        # TODO allocate profits, and then...
 
     def test_aep_by_account(self):
         self.aep.done_parsing()
@@ -318,17 +251,6 @@ class TestAEP(common.TransactionCase):
         self.assertEqual(variation, {self.account_ar.id: -500, self.account_in.id: 500})
         end = self._eval_by_account_id("bale[]")
         self.assertEqual(end, {self.account_ar.id: 900, self.account_in.id: -800})
-
-    def test_aep_by_account_no_data(self):
-        """Test that accounts with no data are not returned."""
-        self.aep.done_parsing()
-        self._do_queries(
-            datetime.date(self.curr_year, 3, 1), datetime.date(self.curr_year, 3, 31)
-        )
-        variation = self._eval("balp[700I%]")
-        self.assertEqual(variation, -500)
-        variation_by_account = self._eval_by_account_id("balp[700I%]")
-        self.assertEqual(variation_by_account, {self.account_in.id: -500})
 
     def test_aep_convenience_methods(self):
         initial = AEP.get_balances_initial(self.company, time.strftime("%Y") + "-03-01")
@@ -382,13 +304,10 @@ class TestAEP(common.TransactionCase):
         self.assertEqual(account_ids, {self.account_in.id})
         expr = "balp[700%]"
         account_ids = self.aep.get_account_ids_for_expr(expr)
-        self.assertEqual(account_ids, {self.account_in.id, self.account_in_no_data.id})
+        self.assertEqual(account_ids, {self.account_in.id})
         expr = "bali[400%], bale[700%]"  # subkpis combined expression
         account_ids = self.aep.get_account_ids_for_expr(expr)
-        self.assertEqual(
-            account_ids,
-            {self.account_in.id, self.account_ar.id, self.account_in_no_data.id},
-        )
+        self.assertEqual(account_ids, {self.account_in.id, self.account_ar.id})
 
     def test_get_aml_domain_for_expr(self):
         self.aep.done_parsing()
@@ -476,26 +395,3 @@ class TestAEP(common.TransactionCase):
                 datetime.date(self.prev_year, 12, 1),
             )
         assert "Error while querying move line source" in str(cm.exception)
-
-    def test_company_rates(self):
-        currency_test = self.env["res.currency"].create(
-            [
-                {
-                    "name": "BBB",
-                    "symbol": "BBB",
-                    "rate_ids": [
-                        Command.create({"name": "2010-10-10", "rate": 1}),
-                        Command.create({"name": "2011-11-11", "rate": 2}),
-                    ],
-                }
-            ]
-        )
-
-        self.aep.currency = currency_test
-        self.aep.companies = self.company
-
-        rate = self.aep._get_company_rates(datetime.date(2010, 12, 12))
-        rate2 = self.aep._get_company_rates(datetime.date(2011, 12, 12))
-
-        self.assertEqual(rate[self.company.id][0], 1.0)
-        self.assertEqual(rate2[self.company.id][0], 2.0)

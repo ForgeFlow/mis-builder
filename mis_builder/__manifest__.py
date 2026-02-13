@@ -3,7 +3,7 @@
 
 {
     "name": "MIS Builder",
-    "version": "16.0.5.7.0",
+    "version": "16.0.5.1.12",
     "category": "Reporting",
     "summary": """
         Build 'Management Information System' Reports and Dashboards
@@ -17,7 +17,6 @@
         "date_range",  # OCA/server-ux
     ],
     "data": [
-        "security/res_groups.xml",
         "wizard/mis_builder_dashboard.xml",
         "views/mis_report.xml",
         "views/mis_report_instance.xml",

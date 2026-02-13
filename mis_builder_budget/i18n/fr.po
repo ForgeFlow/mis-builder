@@ -10,20 +10,15 @@ msgstr ""
 "Project-Id-Version: Odoo Server 11.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-02-10 07:59+0000\n"
-"PO-Revision-Date: 2024-11-06 17:06+0000\n"
-"Last-Translator: samibc2c <sami.bouzidi@camptocamp.com>\n"
+"PO-Revision-Date: 2023-05-26 16:09+0000\n"
+"Last-Translator: \"Sandrine (ACSONE)\" <sandrine.ravet@acsone.eu>\n"
 "Language-Team: French (https://www.transifex.com/oca/teams/23907/fr/)\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.6.2\n"
-
-#. module: mis_builder_budget
-#: model:ir.model.fields,field_description:mis_builder_budget.field_mis_budget_item__budget_company_id
-msgid "#Technical field: Budget Company"
-msgstr ""
+"X-Generator: Weblate 4.17\n"
 
 #. module: mis_builder_budget
 #. odoo-python
@@ -68,12 +63,6 @@ msgid "Action Needed"
 msgstr "Action nécessaire"
 
 #. module: mis_builder_budget
-#: model:ir.model.fields,field_description:mis_builder_budget.field_mis_budget__active
-#: model:ir.model.fields,field_description:mis_builder_budget.field_mis_budget_by_account__active
-msgid "Active"
-msgstr ""
-
-#. module: mis_builder_budget
 #: model:ir.model.fields,help:mis_builder_budget.field_mis_report_instance_period__source
 msgid ""
 "Actuals: current data, from accounting and other queries.\n"
@@ -101,24 +90,16 @@ msgstr "Montant"
 #. module: mis_builder_budget
 #: model:ir.model.fields,field_description:mis_builder_budget.field_mis_budget_by_account_item__analytic_distribution
 msgid "Analytic"
-msgstr "Analitique"
+msgstr ""
 
 #. module: mis_builder_budget
 #: model:ir.model.fields,field_description:mis_builder_budget.field_mis_budget_by_account_item__analytic_distribution_search
 msgid "Analytic Distribution Search"
-msgstr "Recherche distribution analytique"
+msgstr ""
 
 #. module: mis_builder_budget
 #: model:ir.model.fields,field_description:mis_builder_budget.field_mis_budget_by_account_item__analytic_precision
 msgid "Analytic Precision"
-msgstr "Précision analytique"
-
-#. module: mis_builder_budget
-#: model_terms:ir.ui.view,arch_db:mis_builder_budget.mis_budget_by_account_form_view
-#: model_terms:ir.ui.view,arch_db:mis_builder_budget.mis_budget_by_account_search_view
-#: model_terms:ir.ui.view,arch_db:mis_builder_budget.mis_budget_form_view
-#: model_terms:ir.ui.view,arch_db:mis_builder_budget.mis_budget_search_view
-msgid "Archived"
 msgstr ""
 
 #. module: mis_builder_budget
@@ -193,7 +174,6 @@ msgstr "Annulé"
 #: model:ir.model.fields,field_description:mis_builder_budget.field_mis_budget_abstract__company_id
 #: model:ir.model.fields,field_description:mis_builder_budget.field_mis_budget_by_account__company_id
 #: model:ir.model.fields,field_description:mis_builder_budget.field_mis_budget_by_account_item__company_id
-#: model:ir.model.fields,field_description:mis_builder_budget.field_mis_budget_item__company_id
 msgid "Company"
 msgstr "Société"
 
@@ -524,7 +504,7 @@ msgstr "Nombre d'erreurs"
 #: model:ir.model.fields,help:mis_builder_budget.field_mis_budget_abstract__message_needaction_counter
 #: model:ir.model.fields,help:mis_builder_budget.field_mis_budget_by_account__message_needaction_counter
 msgid "Number of messages requiring action"
-msgstr "Nombre de messages nécessitant une action"
+msgstr ""
 
 #. module: mis_builder_budget
 #: model:ir.model.fields,help:mis_builder_budget.field_mis_budget__message_has_error_counter
