@@ -7,7 +7,7 @@ from odoo import fields, models
 class MisBudgetByAccount(models.Model):
     _name = "mis.budget.by.account"
     _description = "MIS Budget by Account"
-    _inherit = ["mis.budget.abstract", "mail.thread"]
+    _inherit = ("mis.budget.abstract", "mail.thread")
 
     item_ids = fields.One2many(
         comodel_name="mis.budget.by.account.item", inverse_name="budget_id", copy=True
