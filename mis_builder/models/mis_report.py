@@ -86,7 +86,7 @@ class MisReportKpi(models.Model):
     _name = "mis.report.kpi"
     _description = "MIS Report KPI"
 
-    name = fields.Char(required=True)
+    name = fields.Char(required=True, copy=True)
     description = fields.Char(required=True, translate=True)
     multi = fields.Boolean()
     expression = fields.Char(
@@ -256,7 +256,7 @@ class MisReportSubkpi(models.Model):
     report_id = fields.Many2one(
         comodel_name="mis.report", required=True, ondelete="cascade"
     )
-    name = fields.Char(required=True)
+    name = fields.Char(required=True, copy=True)
     description = fields.Char(required=True, translate=True)
     expression_ids = fields.One2many("mis.report.kpi.expression", "subkpi_id")
 
@@ -288,7 +288,7 @@ class MisReportKpiExpression(models.Model):
     _order = "sequence, name, id"
 
     sequence = fields.Integer(related="subkpi_id.sequence", store=True)
-    name = fields.Char(string="Expression")
+    name = fields.Char(string="Expression", copy=True)
     kpi_id = fields.Many2one("mis.report.kpi", required=True, ondelete="cascade")
     # TODO FIXME set readonly=True when onchange('subkpi_ids') below works
     subkpi_id = fields.Many2one("mis.report.subkpi", readonly=False, ondelete="cascade")
@@ -353,7 +353,7 @@ class MisReportQuery(models.Model):
             field_names = [field.name for field in record.field_ids]
             record.field_names = ", ".join(field_names)
 
-    name = fields.Char(required=True)
+    name = fields.Char(required=True, copy=True)
     model_id = fields.Many2one("ir.model", required=True, ondelete="cascade")
     field_ids = fields.Many2many(
         "ir.model.fields", required=True, string="Fields to fetch"

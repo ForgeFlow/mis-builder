@@ -779,3 +779,21 @@ class TestMisReportInstance(common.HttpCase):
     def test_copy_mis_report_instance(self):
         new_instance = self.report_instance.copy()
         self.assertEqual(new_instance.name, f"{self.report_instance.name} (copy)")
+
+    def test_copy_mis_report(self):
+        new_report = self.report.copy()
+        self.assertEqual(new_report.name, f"{self.report.name} (copy)")
+        self.assertEqual(
+            new_report.kpi_ids.mapped("name"), self.report.kpi_ids.mapped("name")
+        )
+        self.assertEqual(
+            new_report.subkpi_ids.mapped("name"),
+            self.report.subkpi_ids.mapped("name"),
+        )
+        self.assertEqual(
+            new_report.query_ids.mapped("name"), self.report.query_ids.mapped("name")
+        )
+        self.assertEqual(
+            new_report.kpi_ids.expression_ids.mapped("name"),
+            self.report.kpi_ids.expression_ids.mapped("name"),
+        )

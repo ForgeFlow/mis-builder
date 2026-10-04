@@ -179,7 +179,7 @@ class MisReportInstancePeriod(models.Model):
     _name = "mis.report.instance.period"
     _description = "MIS Report Instance Period"
 
-    name = fields.Char(required=True, string="Label", translate=True)
+    name = fields.Char(required=True, string="Label", translate=True, copy=True)
     mode = fields.Selection(
         [
             (MODE_FIX, "Fixed dates"),
